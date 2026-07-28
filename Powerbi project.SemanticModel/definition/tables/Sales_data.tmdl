@@ -1,0 +1,164 @@
+table Sales_data
+	lineageTag: 5e4c28a5-18cf-44b7-ad34-8393f3fe2669
+
+	measure Total_sales = SUMX(Sales_data,Sales_data[Units Sold]*Sales_data[Price Per Unit])
+		formatString: 0
+		lineageTag: 85c7cef3-4149-463d-9c6f-c2b54b171223
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure Total_Quantity = ```
+			SUM(Sales_data[Units Sold]) 
+			```
+		formatString: 0
+		lineageTag: f1d9101a-af5d-4d08-a813-070c27e7220b
+
+	measure Total_Transactions = ```
+			COUNTROWS(Sales_data) 
+			```
+		formatString: 0
+		lineageTag: 4b39be00-a267-4776-8558-cb6c70aa5c99
+
+	measure Average = ```
+			AVERAGE(Sales_data[Price Per Unit]) 
+			```
+		formatString: 0
+		lineageTag: e6ea38d8-affd-4e58-b1d2-2dfca2268c07
+
+	column 'Transaction ID'
+		dataType: int64
+		formatString: 0
+		lineageTag: 2ce172e3-d9be-4a7c-9420-ff9c194ec55f
+		summarizeBy: count
+		sourceColumn: Transaction ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: aa8ca6d0-5d88-4d5b-80b4-1ba206977a77
+		summarizeBy: none
+		sourceColumn: Date
+
+		variation Variation
+			isDefault
+			relationship: 001a4523-6c92-4d94-92c4-1c47a64f53cf
+			defaultHierarchy: LocalDateTable_0a24bd51-9933-42cd-8141-5b0a5d23f4be.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Day Name'
+		dataType: string
+		lineageTag: 40afb18b-2a17-44ab-8405-ed8cba5d77eb
+		summarizeBy: none
+		sourceColumn: Day Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Brand
+		dataType: string
+		lineageTag: 769b658e-0ec1-459c-8dd4-de545364fa23
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Units Sold'
+		dataType: int64
+		formatString: 0
+		lineageTag: 3a133a44-3ebe-48b8-8471-62dfd055b18e
+		summarizeBy: sum
+		sourceColumn: Units Sold
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Price Per Unit'
+		dataType: int64
+		formatString: 0
+		lineageTag: eb08ff06-dbc3-43e3-a1d2-bda97f17f14e
+		summarizeBy: sum
+		sourceColumn: Price Per Unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: cd61a697-210a-4cbf-9b5c-73db78d2e8ef
+		summarizeBy: none
+		sourceColumn: Customer Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Age'
+		dataType: int64
+		formatString: 0
+		lineageTag: 4bbd2f7d-991e-4565-9b0f-ea71ac42ad1d
+		summarizeBy: sum
+		sourceColumn: Customer Age
+
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		lineageTag: 36e68fa0-40ae-4a3c-bdd6-ba12a4b5e3b8
+		summarizeBy: none
+		sourceColumn: City
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Payment Method'
+		dataType: string
+		lineageTag: 32c0422d-4701-4ab1-ba40-8ad1862acb6f
+		summarizeBy: none
+		sourceColumn: Payment Method
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Customer Ratings'
+		dataType: int64
+		formatString: 0
+		lineageTag: 68d94ba2-d471-4b59-8051-f71bf9a9aea3
+		summarizeBy: sum
+		sourceColumn: Customer Ratings
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mobile Model'
+		dataType: string
+		lineageTag: 45aa118a-001d-43c0-97c4-c79ddda8aa41
+		summarizeBy: none
+		sourceColumn: Mobile Model
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Sales_data = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\admin\Downloads\30 - Project - All Practice files-20260724T002039Z-1-001\30 - Project - All Practice files\Day - 30 - Mobile Sales Data.xlsx"), null, true),
+				    Sheet1_Sheet = Source{[Item="Sheet1",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Sheet, [PromoteAllScalars=true]),
+				    #"Added Custom" = Table.AddColumn(#"Promoted Headers", "Date", each #date([Year],[Month],[Day]), type date),
+				    #"Changed Type with Locale" = Table.TransformColumnTypes(#"Added Custom", {{"Date", type text}}, "en-US"),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type with Locale",{"Day", "Month", "Year"}),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Removed Columns",{"Transaction ID", "Date", "Day Name", "Brand", "Units Sold", "Price Per Unit", "Customer Name", "Customer Age", "City", "Payment Method", "Customer Ratings", "Mobile Model"}),
+				    #"Replaced Value" = Table.ReplaceValue(#"Reordered Columns","Wed","Wednesday",Replacer.ReplaceValue,{"Day Name"}),
+				    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","Fri","Friday",Replacer.ReplaceValue,{"Day Name"}),
+				    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","Mon","Monday",Replacer.ReplaceValue,{"Day Name"}),
+				    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","Sat","Saturday",Replacer.ReplaceValue,{"Day Name"}),
+				    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","Sun","Sunday",Replacer.ReplaceValue,{"Day Name"}),
+				    #"Replaced Value5" = Table.ReplaceValue(#"Replaced Value4","Tue","Tuesday",Replacer.ReplaceValue,{"Day Name"}),
+				    #"Replaced Value6" = Table.ReplaceValue(#"Replaced Value5","Thu","Thursday",Replacer.ReplaceValue,{"Day Name"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Replaced Value6",{{"Customer Age", Int64.Type}, {"Customer Ratings", Int64.Type}}),
+				    #"Changed Type with Locale1" = Table.TransformColumnTypes(#"Changed Type", {{"Date", type date}}, "en-US"),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Changed Type with Locale1",{{"Price Per Unit", Int64.Type}, {"Transaction ID", Int64.Type}, {"Units Sold", Int64.Type}})
+				in
+				    #"Changed Type1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
